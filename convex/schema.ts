@@ -6,7 +6,16 @@ import { v } from "convex/values";
 // app will continue to work.
 // The schema provides more precise TypeScript types.
 export default defineSchema({
-  numbers: defineTable({
-    value: v.number(),
+  resume: defineTable({
+    userId: v.string(),
+    fileName: v.string(),
+    fileId: v.id("_storage"),
+    size: v.number(),
+    mimeType: v.string(),
+    status: v.string(),
+    uploadedAt: v.optional(v.number()),
+
+    // Todo : Upload user request form
+    // Todo : Extracted information from the ai
   }),
 });
