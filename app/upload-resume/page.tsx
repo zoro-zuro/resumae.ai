@@ -1,6 +1,10 @@
 "use client";
+import { generateSampleJobPost } from "@/actions/generateJobPost";
+import { triggerScanning } from "@/actions/triggerScanning";
+import { updateError } from "@/actions/updateError";
 import { UploadFile } from "@/actions/UploadFile";
 import { Button } from "@/components/ui/button";
+import { Id } from "@/convex/_generated/dataModel";
 import { SignInButton, useUser } from "@clerk/clerk-react";
 import {
   DndContext,
@@ -8,7 +12,13 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { CheckCircle, CloudUpload, Lock } from "lucide-react";
+import {
+  Bot,
+  CheckCircle,
+  CloudUpload,
+  FileSearchIcon,
+  Lock,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useRef, useState } from "react";
 
@@ -20,10 +30,42 @@ const UploadResume = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uplodedFileLists, setUploadedFileLists] = useState<string[]>([]);
+  const [textareaValue, setTextAreaValue] = useState("");
+  const [isGeneratingPost, setIsGeneratingPost] = useState(false);
+  const [resumePdfId, setResumePdfId] = useState<Id<"_storage">>();
+  const [resumeId, setResumeId] = useState<Id<"resume">>();
+
+  const [isScanning, setIsScanning] = useState(false);
+
   const router = useRouter();
-  const triggerFileInput = useCallback(() => {
-    fileRef.current?.click();
-  }, []);
+
+  const handleGenerateSamplePost = async () => {
+    try {
+      setIsGeneratingPost(true);
+
+      const response = await generateSampleJobPost(textareaValue || "");
+
+      if (!response.success) {
+        console.error("Error:", response.error);
+        alert(`Error generating sample job post: ${response.error}`);
+        return;
+      }
+
+      if (response.data) {
+        setTextAreaValue(response.data);
+      } else {
+        alert("No sample post received from AI.");
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      alert("Something went wrong while generating the sample job post.");
+    } finally {
+      setIsGeneratingPost(false);
+    }
+  };
+
+  const handleClearTextArea = () => setTextAreaValue("");
+  const triggerFileInput = useCallback(() => fileRef.current?.click(), []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -38,19 +80,19 @@ const UploadResume = () => {
   const handleUpload = useCallback(
     async (files: FileList | File[]) => {
       if (!user) {
-        alert("You must logged in to upload your resume");
+        alert("You must be logged in to upload your resume");
         return;
       }
 
       const fileArray = Array.from(files);
       const pdfFiles = fileArray.filter(
         (file) =>
-          file.type === "application/pdf, .pdf" ||
+          file.type === "application/pdf" ||
           file.name.toLowerCase().endsWith(".pdf"),
       );
 
       if (pdfFiles.length === 0) {
-        alert("Please upload your resume in pdf formats");
+        alert("Please upload your resume in PDF format");
         return;
       }
 
@@ -61,22 +103,17 @@ const UploadResume = () => {
         for (const file of pdfFiles) {
           const formData = new FormData();
           formData.append("file", file);
-          console.log("uploading the file in formData format", formData);
           const result = await UploadFile(formData);
           if (!result.success) {
             throw new Error(`Error uploading resume: ${result.error}`);
           }
           UploadedFiles.push(file.name);
-          console.log(result);
+          setResumePdfId(result.data?.fileId as Id<"_storage">);
+          setResumeId(result.data?.resumeId as Id<"resume">);
         }
+
         setUploadedFileLists((prev) => [...prev, ...UploadedFiles]);
-        setTimeout(() => {
-          setUploadedFileLists([]);
-        }, 3000);
-        router.push("./manage-resume");
-        console.log("Process completed");
       } catch (error) {
-        console.log("Upload failed:", error);
         alert(
           `Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`,
         );
@@ -84,7 +121,7 @@ const UploadResume = () => {
         setIsUploading(false);
       }
     },
-    [user, router],
+    [user],
   );
 
   const handleFileInputChange = useCallback(
@@ -95,16 +132,15 @@ const UploadResume = () => {
     },
     [handleUpload],
   );
+
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       setIsDragging(false);
-
       if (!user) {
         alert("Sign in to upload resumes");
         return;
       }
-
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         handleUpload(e.dataTransfer.files);
       }
@@ -112,24 +148,52 @@ const UploadResume = () => {
     [user, handleUpload],
   );
 
+  const handleTriggerScanning = useCallback(async () => {
+    if (!user) {
+      alert("Authentication failed");
+      throw new Error("Authentication failed");
+    }
+    if (!resumePdfId) {
+      alert("Please upload resume pdf before triggering the scan");
+    }
+    setIsScanning(true);
+    try {
+      const result = await triggerScanning(
+        resumeId,
+        resumePdfId,
+        textareaValue,
+      );
+      if (result.error) {
+        alert(`Error in scanning the resume with job post ${result.error}`);
+        throw new Error("Error in scanning the resume with job post ");
+      }
+      if (result.data) {
+        console.log(result.data);
+      }
+    } catch (error) {
+      alert(`Error triggering scanning the resume ${error}`);
+      await updateError(resumeId as Id<"resume">);
+      throw new Error("Error triggering the resume scan");
+    } finally {
+      setIsScanning(false);
+      router.push(`/resume/${resumeId}`);
+    }
+  }, [user, resumePdfId, textareaValue, router, resumeId]);
+
   if (!user) {
     return (
-      <div className="flex items-center justify-center p-4">
-        <div
-          className="container flex flex-col items-center justify-center p-8 text-center
-                      max-w-2xl bg-secondary/30 backdrop-blur-xl rounded-2xl border border-secondary shadow-lg
-                      text-foreground"
-        >
-          <div className="mb-6">
-            <Lock className="size-16 text-primary" />
-          </div>
-          <h2 className="text-3xl font-bold mb-2">Authentication Required</h2>
-          <p className="text-muted-foreground mb-6 max-w-sm">
-            To unlock all features and securely upload your resume, please sign
-            in to your account.
+      <div className="flex items-center justify-center min-h-screen p-6">
+        <div className="max-w-md w-full bg-white p-8 rounded-xl border shadow-xl text-center">
+          <Lock className="w-12 h-12 text-primary mx-auto mb-4" />
+          <h2 className="text-2xl font-semibold mb-2">
+            Authentication Required
+          </h2>
+          <p className="text-muted-foreground mb-6">
+            Please sign in to securely upload your resume and access all
+            features.
           </p>
           <SignInButton mode="modal">
-            <Button size="lg">Sign In</Button>
+            <Button className="w-full">Sign In</Button>
           </SignInButton>
         </div>
       </div>
@@ -138,66 +202,105 @@ const UploadResume = () => {
 
   return (
     <DndContext sensors={sensor}>
-      <div className="flex items-center justify-between gap-8">
-        <div className="container flex-1 max-w-full h-[600px] bg-gradient-to-t from-primary/50 to-accent/50 shadow-xl border-2 border-primary rounded-4xl">
+      <div className="flex gap-6 flex-wrap justify-center p-6">
+        {/* Upload Section */}
+        <div className="w-full max-w-[480px] h-[600px] bg-white rounded-3xl shadow-lg border border-gray-200 p-6">
           <div
             onDragOver={canUpload ? handleDragOver : undefined}
             onDragLeave={canUpload ? handleDragLeave : undefined}
             onDrop={canUpload ? handleDrop : (e) => e.preventDefault()}
-            className={`h-full w-full p-8 ${!canUpload ? "opacity-70 cursor-not-allowed" : ""}`}
+            className={`h-full w-full flex flex-col items-center justify-center gap-4 transition-all rounded-xl border-2 border-dashed ${isDragging ? "border-blue-400 bg-blue-50" : "border-gray-300 bg-gray-50"} p-8`}
           >
             {isUploading ? (
-              <div className="h-full flex items-center justify-center gap-2">
-                <div className="animate-spin rounded-full border-4 border-primary border-t-transparent h-8 w-8" />
-                <p className="text-xl font-medium">Uploading ...</p>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 border-4 border-t-transparent border-primary rounded-full animate-spin" />
+                <p className="text-gray-700 font-medium">Uploading...</p>
               </div>
             ) : (
-              <div className="text-muted-foreground h-full w-full flex items-center justify-center flex-col rounded-xl  gap-4">
-                <div
-                  className={`flex flex-col items-center border-2 border-dashed rounded-lg p-8 text-center transition-colors bg-white shadow-accent shadow-2xl ${
-                    isDragging
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-300"
-                  }`}
-                >
-                  <CloudUpload className="mx-auto h-12 w-12 text-gray-400" />
-                  <p className="mt-12 text-sm text-gray-600">
-                    Drag and drop PDF files here, or click to select files
-                  </p>
-                  <input
-                    type="file"
-                    ref={fileRef}
-                    accept="application/pdf, .pdf"
-                    multiple
-                    onChange={handleFileInputChange}
-                    className="hidden"
-                  />
-                  <Button
-                    className="mt-4 px-4 py-2  text-white rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={!canUpload}
-                    onClick={triggerFileInput}
-                  >
-                    Select Files
-                  </Button>
-                </div>
-              </div>
-            )}
-            {uplodedFileLists.length > 0 && (
-              <div className="mt-4">
-                <h3 className="font-medium">Upload files:</h3>
-                <ul className="mt-2 text-sm text-gray-600 space-y-1">
-                  {uplodedFileLists.map((fileName, i) => (
-                    <li key={i} className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                      {fileName}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <>
+                <CloudUpload className="w-12 h-12 text-primary" />
+                <p className="text-center text-sm text-gray-600">
+                  Drag and drop PDF files here, or click to select files
+                </p>
+                <input
+                  type="file"
+                  ref={fileRef}
+                  accept="application/pdf, .pdf"
+                  multiple
+                  onChange={handleFileInputChange}
+                  className="hidden"
+                />
+                <Button onClick={triggerFileInput} disabled={!canUpload}>
+                  Select Files
+                </Button>
+              </>
             )}
           </div>
         </div>
-        <div className="container flex-1 max-w-full h-[600px] bg-white rounded-4xl shadow-xl" />
+
+        {/* Tailoring Section */}
+        <div className="w-full max-w-[580px] h-[600px] bg-white rounded-3xl shadow-lg border border-gray-200 p-6 flex flex-col">
+          <div className="flex items-center gap-3 mb-4">
+            <FileSearchIcon className="text-primary" size={32} />
+            <h2 className="text-xl font-semibold">Resume Tailoring</h2>
+          </div>
+          <p className="text-gray-600 text-sm mb-4">
+            Paste <strong>the job you’re applying for</strong> and get a
+            job-specific resume improvement report.
+          </p>
+
+          <div className="flex flex-col bg-gray-50 rounded-lg border border-gray-300 p-4 h-full">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-gray-800 font-medium">
+                Get a job-specific report
+              </span>
+              <Button variant="outline" size="sm" onClick={handleClearTextArea}>
+                Clear
+              </Button>
+            </div>
+            <textarea
+              value={textareaValue}
+              onChange={(e) => setTextAreaValue(e.target.value)}
+              placeholder="Paste job description here..."
+              className="resize-none w-full h-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+            />
+            <div className="mt-2 text-right">
+              <Button
+                variant="link"
+                className="text-sm px-2"
+                onClick={() => {
+                  handleGenerateSamplePost();
+                }}
+              >
+                <Bot className="w-4 h-4 mr-1" />
+                {isGeneratingPost
+                  ? "Generating..."
+                  : "Generate Sample Job Post"}
+              </Button>
+            </div>
+          </div>
+
+          <Button
+            className={`mt-4 w-full ${isScanning || !resumeId || !resumePdfId ? "cursor-not-allowed" : ""} `}
+            onClick={() => handleTriggerScanning()}
+            disabled={!resumePdfId || !resumeId}
+          >
+            {!isScanning ? "Start Scanning" : "Scanning ..."}
+          </Button>
+          {uplodedFileLists.length > 0 && (
+            <div className="w-full mt-4">
+              <h4 className="font-semibold text-sm mb-2">Uploaded Files:</h4>
+              <ul className="space-y-1 text-sm text-green-700">
+                {uplodedFileLists.map((fileName, i) => (
+                  <li key={i} className="flex items-center">
+                    <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                    {fileName}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
     </DndContext>
   );

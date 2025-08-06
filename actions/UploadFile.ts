@@ -56,13 +56,17 @@ export const UploadFile = async (formData: FormData) => {
       mimeType: file.type,
       size: file.size,
     });
-    // Todo: inngest workflow
+
+    await convex.mutation(api.resume.updateStatus, {
+      resumeId,
+    });
 
     return {
       success: true,
       data: {
         resumeId,
         fileName: file?.name,
+        fileId: storageId,
       },
     };
   } catch (error) {

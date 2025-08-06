@@ -1,10 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
-// The schema is entirely optional.
-// You can delete this file (schema.ts) and the
-// app will continue to work.
-// The schema provides more precise TypeScript types.
 export default defineSchema({
   resume: defineTable({
     userId: v.string(),
@@ -15,7 +11,20 @@ export default defineSchema({
     status: v.string(),
     uploadedAt: v.optional(v.number()),
 
-    // Todo : Upload user request form
-    // Todo : Extracted information from the ai
+    // Uploaded by user
+    sampleJob: v.string(),
+    role: v.string(),
+    resumeScore: v.number(), // Overall ATS score
+    matchedSkills: v.array(v.string()), // Skills they have
+    missingSkills: v.array(v.string()), // Skills they need
+    recommendations: v.array(v.string()),
+    keywordSuggestions: v.array(v.string()),
+    experienceGap: v.string(),
+    aisummary: v.string(),
+    skillsMatch: v.number(),
+    experienceMatch: v.boolean(),
+    keywordDensity: v.number(),
+    strengths: v.array(v.string()),
+    warnings: v.array(v.string()),
   }),
 });

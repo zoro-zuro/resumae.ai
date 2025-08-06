@@ -45,7 +45,9 @@ export default function RootLayout({
               />
             </div>
             {/* The main content area that expands to fill the space */}
-            <main className="px-8 flex-grow py-4">{children}</main>
+            <main className="px-4 md:px-8 py-4 flex-grow w-full max-w-[1600px] mx-auto overflow-x-hidden">
+              {children}
+            </main>
           </ConvexClientProvider>
         </ClerkProvider>
       </body>
