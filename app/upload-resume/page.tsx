@@ -2,6 +2,7 @@
 import { generateSampleJobPost } from "@/actions/generateJobPost";
 import { triggerScanning } from "@/actions/triggerScanning";
 import { updateError } from "@/actions/updateError";
+import { UpdateResumePdf } from "@/actions/UpdateResumePdf";
 import { UploadFile } from "@/actions/UploadFile";
 import { Button } from "@/components/ui/button";
 import { Id } from "@/convex/_generated/dataModel";
@@ -18,6 +19,7 @@ import {
   CloudUpload,
   FileSearchIcon,
   Lock,
+  RefreshCwIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useRef, useState } from "react";
@@ -34,9 +36,9 @@ const UploadResume = () => {
   const [isGeneratingPost, setIsGeneratingPost] = useState(false);
   const [resumePdfId, setResumePdfId] = useState<Id<"_storage">>();
   const [resumeId, setResumeId] = useState<Id<"resume">>();
-
   const [isScanning, setIsScanning] = useState(false);
-
+  const [isReplacingFiles, setIsReplacingFiles] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const router = useRouter();
 
   const handleGenerateSamplePost = async () => {
@@ -65,7 +67,10 @@ const UploadResume = () => {
   };
 
   const handleClearTextArea = () => setTextAreaValue("");
-  const triggerFileInput = useCallback(() => fileRef.current?.click(), []);
+  const triggerFileInput = useCallback(() => {
+    fileRef.current?.click();
+    console.log("File input triggered");
+  }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -110,6 +115,7 @@ const UploadResume = () => {
           UploadedFiles.push(file.name);
           setResumePdfId(result.data?.fileId as Id<"_storage">);
           setResumeId(result.data?.resumeId as Id<"resume">);
+          setPdfUrl(result.data?.pdfUrl || null);
         }
 
         setUploadedFileLists((prev) => [...prev, ...UploadedFiles]);
@@ -124,13 +130,75 @@ const UploadResume = () => {
     [user],
   );
 
-  const handleFileInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files?.length) {
-        handleUpload(e.target.files);
+  const handleReupload = useCallback(
+    async (files: FileList) => {
+      console.log("Reuploading files", files);
+      if (!user) {
+        alert("You must be logged in to upload your resume");
+        return;
+      }
+
+      const fileArray = Array.from(files);
+      const pdfFiles = fileArray.filter(
+        (file) =>
+          file.type === "application/pdf" ||
+          file.name.toLowerCase().endsWith(".pdf"),
+      );
+
+      if (pdfFiles.length === 0) {
+        alert("Please upload your resume in PDF format");
+        return;
+      }
+      setIsUploading(true);
+      try {
+        const UploadedFiles: string[] = [];
+
+        for (const file of pdfFiles) {
+          const formData = new FormData();
+          formData.append("file", file);
+          const result = await UpdateResumePdf(
+            resumePdfId as Id<"_storage">,
+            resumeId as Id<"resume">,
+            formData,
+          );
+          if (!result.success) {
+            throw new Error(`Error uploading resume: ${result.error}`);
+          }
+          UploadedFiles.push(file.name);
+          setResumePdfId(result.data?.fileId as Id<"_storage">);
+          setResumeId(result.data?.resumeId as Id<"resume">);
+          setPdfUrl(result.data?.pdfUrl || null);
+        }
+
+        setUploadedFileLists(UploadedFiles);
+        setIsReplacingFiles(false); // <-- Reset after reupload
+        if (fileRef.current) fileRef.current.value = ""; // <-- Reset input value
+      } catch (error) {
+        alert(
+          `Reupload failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        );
+        throw error;
+      } finally {
+        setIsUploading(false);
       }
     },
-    [handleUpload],
+    [user, resumeId, resumePdfId],
+  );
+
+  const handleFileInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      console.log("File input changed", e.target.files);
+      if (isReplacingFiles) {
+        if (e.target.files?.length) {
+          handleReupload(e.target.files);
+        }
+      } else {
+        if (e.target.files?.length) {
+          handleUpload(e.target.files);
+        }
+      }
+    },
+    [handleUpload, isReplacingFiles, handleReupload],
   );
 
   const handleDrop = useCallback(
@@ -204,32 +272,61 @@ const UploadResume = () => {
     <DndContext sensors={sensor}>
       <div className="flex gap-6 flex-wrap justify-center p-6">
         {/* Upload Section */}
-        <div className="w-full max-w-[480px] h-[600px] bg-white rounded-3xl shadow-lg border border-gray-200 p-6">
+        <div className="w-full max-w-[480px] h-[600px] bg-white rounded-3xl shadow-lg border border-gray-200 p-6 relative">
           <div
             onDragOver={canUpload ? handleDragOver : undefined}
             onDragLeave={canUpload ? handleDragLeave : undefined}
             onDrop={canUpload ? handleDrop : (e) => e.preventDefault()}
-            className={`h-full w-full flex flex-col items-center justify-center gap-4 transition-all rounded-xl border-2 border-dashed ${isDragging ? "border-blue-400 bg-blue-50" : "border-gray-300 bg-gray-50"} p-8`}
+            className={`h-full w-full flex flex-col items-center justify-center gap-4 transition-all rounded-xl border-2 border-dashed ${isDragging ? "border-blue-400 bg-blue-50" : "border-gray-300 bg-gray-50 "} ${isReplacingFiles ? "p-0" : "p-8"}`}
           >
+            <input
+              type="file"
+              ref={fileRef}
+              accept="application/pdf, .pdf"
+              multiple
+              onChange={handleFileInputChange}
+              className="hidden"
+            />
             {isUploading ? (
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 border-4 border-t-transparent border-primary rounded-full animate-spin" />
                 <p className="text-gray-700 font-medium">Uploading...</p>
               </div>
+            ) : pdfUrl ? (
+              <>
+                <div
+                  className=" rounded-lg w-full overflow-auto"
+                  style={{ height: "100%" }}
+                >
+                  <iframe
+                    src={`${pdfUrl}#page=1`}
+                    className="w-full h-full rounded-xl border-0"
+                    title="Resume Preview"
+                    style={{ backgroundColor: "white" }}
+                  />
+                </div>
+
+                <Button
+                  className="absolute inset-0 mt-0.5 mx-auto w-fit border-dashed border-white rounded-full"
+                  onClick={() => {
+                    if (resumePdfId) {
+                      setIsReplacingFiles(true);
+                      triggerFileInput();
+                      console.log("Reuploading file...");
+                    }
+                  }}
+                  disabled={!canUpload}
+                >
+                  <RefreshCwIcon size={5} stroke="white" />
+                </Button>
+              </>
             ) : (
               <>
                 <CloudUpload className="w-12 h-12 text-primary" />
                 <p className="text-center text-sm text-gray-600">
                   Drag and drop PDF files here, or click to select files
                 </p>
-                <input
-                  type="file"
-                  ref={fileRef}
-                  accept="application/pdf, .pdf"
-                  multiple
-                  onChange={handleFileInputChange}
-                  className="hidden"
-                />
+
                 <Button onClick={triggerFileInput} disabled={!canUpload}>
                   Select Files
                 </Button>

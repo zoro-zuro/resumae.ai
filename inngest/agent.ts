@@ -8,6 +8,7 @@ import Events from "./constants";
 import { analyeseDoc } from "./angents/analyseDoc";
 import { analyseMatch } from "./angents/analyseMatch";
 import { saveToDb } from "./angents/saveToDb";
+import { Id } from "@/convex/_generated/dataModel";
 
 const agentNetwork = createNetwork({
   name: "Agent Team",
@@ -48,6 +49,6 @@ Focus on:
 Once saved to database, mark as complete.
 `);
 
-    return response.state.kv.get("resumeId");
+    return response.state.kv.get("resumeId") as Id<"resume">;
   },
 );

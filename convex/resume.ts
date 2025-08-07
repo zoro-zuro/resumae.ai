@@ -184,3 +184,36 @@ export const deleteResume = mutation({
     return { success: true, message: "Resume deleted successfully" };
   },
 });
+
+export const delAndGenerateUrl = mutation({
+  args: {
+    resumeStroageId: v.id("_storage"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.storage.delete(args.resumeStroageId);
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
+export const updateFile = mutation({
+  args:{
+    resumeId:v.id("resume"),
+    fileId:v.id("_storage"),
+    fileName:v.string(),
+    size:v.number(),
+    mimeType:v.string()
+  },
+  handler: async(ctx,args)=>{
+    const resume = await ctx.db.get(args.resumeId);
+    if(!resume){
+      throw new Error("Resume Not found")
+    }
+
+    await ctx.db.patch(args.resumeId,{
+      fileId:args.fileId,
+      fileName:args.fileName,
+      size:args.size,
+      mimeType:args.mimeType
+    })
+  }
+})

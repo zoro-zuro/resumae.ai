@@ -45,6 +45,10 @@ export const triggerScanning = async (
       },
     });
 
+    await convex.mutation(api.resume.updateStatus, {
+      resumeId: resumeId as Id<"resume">,
+    });
+
     return {
       success: true,
       data: {

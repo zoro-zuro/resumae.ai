@@ -57,16 +57,16 @@ export const UploadFile = async (formData: FormData) => {
       size: file.size,
     });
 
-    await convex.mutation(api.resume.updateStatus, {
-      resumeId,
+    const pdfUrl = await convex.query(api.resume.generateDownloadUrl, {
+      resumeId: storageId,
     });
-
     return {
       success: true,
       data: {
         resumeId,
         fileName: file?.name,
         fileId: storageId,
+        pdfUrl,
       },
     };
   } catch (error) {
