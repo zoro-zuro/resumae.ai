@@ -1,51 +1,51 @@
-# Welcome to your Convex + Next.js + Clerk app
+# Resumae AI
 
-This is a [Convex](https://convex.dev/) project created with [`npm create convex`](https://www.npmjs.com/package/create-convex).
+Welcome to **Resumae AI**!
 
-After the initial setup (<2 minutes) you'll have a working full-stack app using:
+Resumae AI is a web application designed to help you create, edit, and optimize your resume using artificial intelligence.
 
-- Convex as your backend (database, server logic)
-- [React](https://react.dev/) as your frontend (web page interactivity)
-- [Next.js](https://nextjs.org/) for optimized web hosting and page routing
-- [Tailwind](https://tailwindcss.com/) for building great looking accessible UI
-- [Clerk](https://clerk.com/) for authentication
+## 🚀 Visit the App
 
-## Get started
+You can access the live application here:  
+👉 https://resumae-ai.vercel.app/
 
-If you just cloned this codebase and didn't use `npm create convex`, run:
+## Features
 
-```
-npm install
-npm run dev
-```
+- Effortless resume creation and editing
+- AI-powered suggestions and optimizations
+- Modern, user-friendly interface
+- Export resumes in various formats
+- **AI Report Generation:** Upload your resume and a job post—get a detailed report analyzing your fit for the job!
+- **Codebase Stats:** The app was built with:
+  - **3757 lines of code** (TypeScript, JavaScript, JSON, CSS, Markdown, and more)
+  - 50 files
+  - 344 blank lines
+  - 273 comments
 
-If you're reading this README on GitHub and want to use this template, run:
+## Getting Started
 
-```
-npm create convex@latest -- -t nextjs-clerk
-```
+To get started, simply visit the app using the link above. No installation required!
 
-Then:
+## Technologies Used
 
-1. Open your app. There should be a "Claim your application" button from Clerk in the bottom right of your app.
-2. Follow the steps to claim your application and link it to this app.
-3. Follow step 3 in the [Convex Clerk onboarding guide](https://docs.convex.dev/auth/clerk#get-started) to create a Convex JWT template.
-4. Uncomment the Clerk provider in `convex/auth.config.ts`
-5. Paste the Issuer URL as `CLERK_JWT_ISSUER_DOMAIN` to your dev deployment environment variable settings on the Convex dashboard (see [docs](https://docs.convex.dev/auth/clerk#configuring-dev-and-prod-instances))
+- React
+- Next.js
+- TypeScript
+- AI/ML Backend (details may vary)
+- Hosted on Vercel
 
-If you want to sync Clerk user data via webhooks, check out this [example repo](https://github.com/thomasballinger/convex-clerk-users-table/).
+## Contributing
 
-## Learn more
+Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
 
-To learn more about developing your project with Convex, check out:
+## License
 
-- The [Tour of Convex](https://docs.convex.dev/get-started) for a thorough introduction to Convex principles.
-- The rest of [Convex docs](https://docs.convex.dev/) to learn about all Convex features.
-- [Stack](https://stack.convex.dev/) for in-depth articles on advanced topics.
+This project is licensed under the MIT License.
 
-## Join the community
+## Contact
 
-Join thousands of developers building full-stack apps with Convex:
+For support or questions, feel free to open an issue or contact the project maintainer.
 
-- Join the [Convex Discord community](https://convex.dev/community) to get help in real-time.
-- Follow [Convex on GitHub](https://github.com/get-convex/), star and contribute to the open-source implementation of Convex.
+---
+
+✨ Happy resume building with Resumae AI!
