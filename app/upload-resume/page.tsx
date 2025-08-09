@@ -224,6 +224,7 @@ const UploadResume = () => {
     if (!resumePdfId) {
       alert("Please upload resume pdf before triggering the scan");
     }
+    router.push("/manage-resume");
     setIsScanning(true);
     try {
       const result = await triggerScanning(
@@ -277,7 +278,7 @@ const UploadResume = () => {
             onDragOver={canUpload ? handleDragOver : undefined}
             onDragLeave={canUpload ? handleDragLeave : undefined}
             onDrop={canUpload ? handleDrop : (e) => e.preventDefault()}
-            className={`h-full w-full flex flex-col items-center justify-center gap-4 transition-all rounded-xl border-2 border-dashed ${isDragging ? "border-blue-400 bg-blue-50" : "border-gray-300 bg-gray-50 "} ${isReplacingFiles ? "p-0" : "p-8"}`}
+            className={`h-full w-full flex flex-col items-center justify-center gap-4 transition-all rounded-xl border-2 border-dashed ${isDragging ? "border-blue-400 bg-blue-50" : "border-gray-300 bg-gray-50 "} }`}
           >
             <input
               type="file"
@@ -368,6 +369,7 @@ const UploadResume = () => {
                 onClick={() => {
                   handleGenerateSamplePost();
                 }}
+                disabled={isUploading || isScanning}
               >
                 <Bot className="w-4 h-4 mr-1" />
                 {isGeneratingPost
@@ -380,7 +382,7 @@ const UploadResume = () => {
           <Button
             className={`mt-4 w-full ${isScanning || !resumeId || !resumePdfId ? "cursor-not-allowed" : ""} `}
             onClick={() => handleTriggerScanning()}
-            disabled={!resumePdfId || !resumeId}
+            disabled={!resumePdfId || !resumeId || isUploading || isScanning}
           >
             {!isScanning ? "Start Scanning" : "Scanning ..."}
           </Button>

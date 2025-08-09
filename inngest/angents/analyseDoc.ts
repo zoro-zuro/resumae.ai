@@ -27,7 +27,7 @@ const parseDoc = createTool({
           apiKey: process.env.GEMINI_API_KEY,
           defaultParameters: {
             generationConfig: {
-              maxOutputTokens: 3094,
+              // maxOutputTokens: 3094,
             },
           },
         }),
@@ -97,7 +97,7 @@ Avoid general summaries. Return concise, factual data points that can be used di
     baseUrl: process.env.OPENAI_BASEURL,
     apiKey: process.env.OPENAI_API_KEY,
     defaultParameters: {
-      max_completion_tokens: 3094,
+      // max_completion_tokens: 3094,
     },
   }),
   tools: [parseDoc],

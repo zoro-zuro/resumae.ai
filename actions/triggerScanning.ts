@@ -36,7 +36,7 @@ export const triggerScanning = async (
         error: `Error in generating url for resume ${resumelUrl}`,
       };
     }
-    await inngest.send({
+    const sendEvent = await inngest.send({
       name: Events.SCAN_RESUME_ANALYSE_CTC,
       data: {
         url: resumelUrl,
@@ -44,10 +44,13 @@ export const triggerScanning = async (
         resumeId,
       },
     });
-
-    await convex.mutation(api.resume.updateStatus, {
-      resumeId: resumeId as Id<"resume">,
-    });
+    if (sendEvent) {
+      console.log("Event sent successfully", sendEvent);
+      await convex.mutation(api.resume.updateStatus, {
+        resumeId: resumeId as Id<"resume">,
+      });
+      console.log(`Resume status updated successfully for ${resumeId}`);
+    }
 
     return {
       success: true,

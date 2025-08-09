@@ -4,7 +4,6 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { useParams, useRouter } from "next/navigation";
-
 import { Badge } from "@/components/ui/badge";
 import {
   FileText,
@@ -25,7 +24,8 @@ import {
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { triggerDeleteResume } from "@/actions/deleteResume";
-
+import Lottie from "lottie-react";
+import animationData from "@/public/ResumePageAnimation.json";
 const ResumePage = () => {
   const params = useParams<{ id: Id<"resume"> }>();
   const [tab, setTab] = useState("analytics");
@@ -36,8 +36,10 @@ const ResumePage = () => {
   const pdfUrl = useQuery(api.resume.generateDownloadUrl, {
     resumeId: resume?.fileId as Id<"_storage">,
   });
+  const isLoading = !resume;
 
   const handleDeleteResume = useCallback(async () => {
+    router.push("/manage-resume");
     try {
       if (!resume?._id) {
         console.error("No resume ID found");
@@ -53,15 +55,22 @@ const ResumePage = () => {
     } catch (error) {
       console.error("Error deleting resume:", error);
       return;
-    } finally {
-      router.push("/manage-resume");
     }
   }, [resume?._id, router]);
 
-  if (!resume) {
+  if (isLoading || !resume) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="text-gray-600 text-xl animate-pulse">Loading...</div>
+      <div className="flex items-center justify-center h-screen mx-8">
+        <Lottie
+          className="animation rounded-2xl"
+          animationData={animationData}
+          loop={true}
+          autoplay={true}
+          style={{ width: "100%", height: "100%", borderRadius: "1rem" }}
+          // Optional: Control playback
+          // speed={1}
+          // direction={1}
+        />
       </div>
     );
   }
@@ -94,8 +103,8 @@ const ResumePage = () => {
   ];
 
   return (
-    <div className="bg-gradient-to-bl from-primary/40 to-accent/60 rounded-xl backdrop:blur-2xl p-6 mb-6 mt-4 flex items-center justify-center">
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="bg-gradient-to-bl from-primary/40 to-accent/60 rounded-xl backdrop:blur-2xl p-5 md:p-6 mx-4 md:mx-8 mb-6 mt-4 flex items-center justify-center">
+      <div className="w-full max-w-7xl mx-auto sm:px-3 lg:px-8">
         {/* Header */}
         <div className="flex min-w-full flex-col container items-end justify-center">
           <div className=" items-center space-x-3 md:hidden flex">
@@ -516,11 +525,11 @@ const ResumePage = () => {
 
                   {/* PDF Viewer */}
                   <div
-                    className="bg-gray-100 rounded-lg p-4 mb-4 w-full overflow-auto"
+                    className="bg-gray-100 rounded-lg p-0 md:p-4 mb-4 w-full overflow-auto"
                     style={{ height: "400px" }}
                   >
                     <iframe
-                      src={`${pdfUrl}#page=1`}
+                      src={`${pdfUrl}#page=1&view=full&zoom=40`}
                       className="w-full h-full rounded border-0"
                       title="Resume Preview"
                       style={{ backgroundColor: "white" }}

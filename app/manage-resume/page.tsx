@@ -4,17 +4,19 @@ import { Badge } from "@/components/ui/badge";
 import { api } from "@/convex/_generated/api";
 import { SignInButton, useUser } from "@clerk/clerk-react";
 import { useQuery } from "convex/react";
-import { Lock, FileText, Calendar, HardDrive } from "lucide-react";
+import { Lock, FileText, Calendar, HardDrive, View } from "lucide-react";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
+import { Id } from "@/convex/_generated/dataModel";
+import { triggerDeleteResume } from "@/actions/deleteResume";
+import { useState } from "react";
 
 const ManageResume = () => {
   const { user } = useUser();
@@ -22,7 +24,26 @@ const ManageResume = () => {
     userId: user?.id as string,
   });
   const router = useRouter();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const handleDelete = async (resumeId: Id<"resume">) => {
+    setIsDeleting(true);
+    try {
+      const response = await triggerDeleteResume(resumeId);
 
+      if (response?.error) {
+        console.error(
+          `Error deleting resume ${resumeId} Error:${response.error}`,
+        );
+      }
+      if (response?.success) {
+        console.log(`Success deleting resume ${resumeId}`);
+      }
+    } catch (error) {
+      console.error(`Error deleting resume ${resumeId} Error:${error}`);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   if (!user) {
     return (
       <div className="flex items-center justify-center p-4">
@@ -117,42 +138,48 @@ const ManageResume = () => {
             Manage and track your uploaded resumes
           </p>
         </div>
-
-        {/* Table Container with Shadow */}
-        <div className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
-          <div className="p-6">
+        {/* Table container */}
+        <div className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden relative">
+          {/* Remove overflow from this div and add fixed height with overflow to the container */}
+          <div className="p-6 max-h-[350px] overflow-y-auto">
             <Table>
-              <TableCaption className="text-gray-500 pb-4">
-                A list of your recent resume uploads and their current status.
-              </TableCaption>
-              <TableHeader>
+              <TableHeader className="sticky top-0 bg-white z-10">
                 <TableRow className="border-b border-gray-200">
-                  <TableHead className="font-semibold text-gray-700 py-4">
+                  <TableHead className="font-semibold text-gray-700 py-4 bg-white">
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4" />
                       File Name
                     </div>
                   </TableHead>
-                  <TableHead className="font-semibold text-gray-700">
+                  <TableHead className="font-semibold text-gray-700 bg-white">
                     Status
                   </TableHead>
-                  <TableHead className="font-semibold text-gray-700">
+                  <TableHead className="font-semibold text-gray-700 bg-white">
                     <div className="flex items-center gap-2">
                       <HardDrive className="w-4 h-4" />
                       Size
                     </div>
                   </TableHead>
-                  <TableHead className="font-semibold text-gray-700">
+                  <TableHead className="font-semibold text-gray-700 bg-white">
                     Type
                   </TableHead>
-                  <TableHead className="font-semibold text-gray-700">
+                  <TableHead className="font-semibold text-gray-700 bg-white">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
                       Uploaded
                     </div>
                   </TableHead>
+                  {/* Add the missing Actions column header */}
+                  <TableHead className="font-semibold text-gray-700 bg-white">
+                    View
+                  </TableHead>
+                  <TableHead className="font-semibold text-gray-700 bg-white">
+                    Delete
+                  </TableHead>
                 </TableRow>
               </TableHeader>
+
+              {/* Remove overflow and height from TableBody */}
               <TableBody>
                 {resumeList && resumeList.length > 0 ? (
                   resumeList.map((resume) => (
@@ -195,14 +222,33 @@ const ManageResume = () => {
                             router.push(`/resume/${resume._id}`);
                           }}
                         >
-                          Veiw
+                          <View className="w-4 h-4 ml-1.5" />
+                          View
+                        </Button>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          onClick={() => handleDelete(resume._id)}
+                          variant="destructive"
+                        >
+                          {isDeleting ? (
+                            <>
+                              <span>Deleting...</span>
+                            </>
+                          ) : (
+                            <>
+                              <FileText className="w-4 h-4" />
+                              <span>Delete</span>
+                            </>
+                          )}
                         </Button>
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-12">
+                    {/* Fix colSpan to 6 since we now have 6 columns */}
+                    <TableCell colSpan={6} className="text-center py-12">
                       <div className="flex flex-col items-center gap-3">
                         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
                           <FileText className="w-8 h-8 text-gray-400" />

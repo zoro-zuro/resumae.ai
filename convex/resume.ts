@@ -134,7 +134,7 @@ export const updateStatus = mutation({
       throw new Error("No resume found");
     }
     await ctx.db.patch(args.resumeId, {
-      status: "completed",
+      status: "processing",
     });
   },
 });
@@ -196,24 +196,24 @@ export const delAndGenerateUrl = mutation({
 });
 
 export const updateFile = mutation({
-  args:{
-    resumeId:v.id("resume"),
-    fileId:v.id("_storage"),
-    fileName:v.string(),
-    size:v.number(),
-    mimeType:v.string()
+  args: {
+    resumeId: v.id("resume"),
+    fileId: v.id("_storage"),
+    fileName: v.string(),
+    size: v.number(),
+    mimeType: v.string(),
   },
-  handler: async(ctx,args)=>{
+  handler: async (ctx, args) => {
     const resume = await ctx.db.get(args.resumeId);
-    if(!resume){
-      throw new Error("Resume Not found")
+    if (!resume) {
+      throw new Error("Resume Not found");
     }
 
-    await ctx.db.patch(args.resumeId,{
-      fileId:args.fileId,
-      fileName:args.fileName,
-      size:args.size,
-      mimeType:args.mimeType
-    })
-  }
-})
+    await ctx.db.patch(args.resumeId, {
+      fileId: args.fileId,
+      fileName: args.fileName,
+      size: args.size,
+      mimeType: args.mimeType,
+    });
+  },
+});
