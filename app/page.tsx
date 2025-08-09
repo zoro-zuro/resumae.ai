@@ -4,12 +4,15 @@ import {
   ArrowRight,
   Upload,
   Search,
-  Check,
   Target,
   Zap,
   TrendingUp,
   CheckCircle,
+  Users,
+  Mail,
   LayoutGrid,
+  FileText,
+  CheckSquare,
 } from "lucide-react";
 import animationData from "@/public/LandingPageAnimation.json";
 import Lottie from "lottie-react";
@@ -233,129 +236,195 @@ export default function ResumeLanding() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="py-20 md:py-28 bg-gray-50">
-        <div className="container px-4 md:px-6 mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-gray-900 mb-4">
-              Simple, Transparent Pricing
+      {/* How to Use — Step-by-step guide */}
+      <section className="py-16 md:py-24 bg-gradient-to-br from-gray-50 via-white to-purple-50 relative overflow-hidden">
+        {/* Background decorations */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-100 rounded-full opacity-20 animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-100 rounded-full opacity-20 animate-pulse delay-1000"></div>
+        </div>
+
+        <div className="container px-4 md:px-6 mx-auto relative">
+          {/* Header */}
+          <div className="text-center mb-16 max-w-4xl mx-auto">
+            <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
+              <FileText className="w-4 h-4" />
+              Simple Process
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 mb-6">
+              How it works — Get your{" "}
+              <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                resume optimized
+              </span>
             </h2>
-            <p className="max-w-[700px] text-gray-600 text-xl mx-auto">
-              Choose the plan that accelerates your career growth.
+            <p className="text-xl text-gray-600 leading-relaxed">
+              A few simple steps — upload, scan, and we&apos;ll email the full
+              AI report when it&apos;s ready.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Free Tier */}
-            <div className="bg-white border-2 border-gray-200 rounded-2xl p-8 relative">
-              <div className="mb-6">
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Free</h3>
-                <p className="text-gray-600">Perfect for getting started</p>
+          {/* Steps Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+            {/* Step 1 */}
+            <div className="group relative">
+              <div className="hidden lg:block absolute top-12 left-full w-8 h-0.5 bg-gradient-to-r from-gray-200 to-transparent z-0"></div>
+              <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 group-hover:-translate-y-2 h-full relative z-10">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-600 to-blue-500 text-white font-bold text-xl mb-6 shadow-lg">
+                  1
+                </div>
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-gray-900 leading-tight">
+                    Login / Sign Up
+                  </h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Create an account or sign in to save reports, manage uploads
+                    and receive results by email.
+                  </p>
+                  <div className="flex items-center gap-3 pt-2">
+                    <Users className="h-5 w-5 text-purple-600" />
+                    <span className="text-xs font-medium text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full">
+                      Secure profiles & saved history
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900">$0</span>
-                <span className="text-gray-500">/month</span>
-              </div>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-center">
-                  <Check className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span>3 resume analyses per month</span>
-                </li>
-                <li className="flex items-center">
-                  <Check className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span>Basic job matching</span>
-                </li>
-                <li className="flex items-center">
-                  <Check className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span>Resume score overview</span>
-                </li>
-              </ul>
-              <button className="w-full border-2 border-purple-200 hover:bg-purple-50 text-purple-700 py-3 rounded-lg font-semibold transition-colors">
-                Get Started Free
-              </button>
             </div>
 
-            {/* Pro Tier */}
-            <div className="bg-white border-2 border-purple-500 rounded-2xl p-8 relative transform scale-105">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-purple-500 text-white px-4 py-2 rounded-full text-sm font-medium">
-                  Most Popular
-                </span>
+            {/* Step 2 */}
+            <div className="group relative">
+              <div className="hidden lg:block absolute top-12 left-full w-8 h-0.5 bg-gradient-to-r from-gray-200 to-transparent z-0"></div>
+              <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 group-hover:-translate-y-2 h-full relative z-10">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-green-500 to-emerald-400 text-white font-bold text-xl mb-6 shadow-lg">
+                  2
+                </div>
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-gray-900 leading-tight">
+                    Upload & Choose Role
+                  </h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Upload your resume and type the role you want to match. We
+                    can also auto-generate a sample job post using AI.
+                  </p>
+                  <div className="flex items-center gap-3 pt-2">
+                    <Upload className="h-5 w-5 text-green-600" />
+                    <span className="text-xs font-medium text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full">
+                      Upload .pdf / .docx
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="mb-6">
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  Professional
-                </h3>
-                <p className="text-gray-600">For serious job seekers</p>
-              </div>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900">$19</span>
-                <span className="text-gray-500">/month</span>
-              </div>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-center">
-                  <Check className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span>Unlimited resume analyses</span>
-                </li>
-                <li className="flex items-center">
-                  <Check className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span>Advanced AI insights</span>
-                </li>
-                <li className="flex items-center">
-                  <Check className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span>Job description generator</span>
-                </li>
-                <li className="flex items-center">
-                  <Check className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span>Detailed improvement reports</span>
-                </li>
-                <li className="flex items-center">
-                  <Check className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span>Priority support</span>
-                </li>
-              </ul>
-              <button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition-colors">
-                Start Free Trial
-              </button>
             </div>
 
-            {/* Enterprise Tier */}
-            <div className="bg-white border-2 border-gray-200 rounded-2xl p-8 relative">
-              <div className="mb-6">
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  Enterprise
-                </h3>
-                <p className="text-gray-600">For teams and organizations</p>
+            {/* Step 3 */}
+            <div className="group relative">
+              <div className="hidden lg:block absolute top-12 left-full w-8 h-0.5 bg-gradient-to-r from-gray-200 to-transparent z-0"></div>
+              <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 group-hover:-translate-y-2 h-full relative z-10">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 text-white font-bold text-xl mb-6 shadow-lg">
+                  3
+                </div>
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-gray-900 leading-tight">
+                    Start Scan & Request Email
+                  </h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Click &ldquo;Start Scan&rdquo; to begin the analysis. Tick
+                    the checkbox to get the finished report emailed to you
+                    automatically.
+                  </p>
+                  <div className="flex items-center gap-3 pt-2">
+                    <CheckSquare className="h-5 w-5 text-indigo-600" />
+                    <span className="text-xs font-medium text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full">
+                      Email me when analysis completes
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900">$49</span>
-                <span className="text-gray-500">/month</span>
+            </div>
+
+            {/* Step 4 */}
+            <div className="group relative">
+              <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 group-hover:-translate-y-2 h-full relative z-10">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-400 text-white font-bold text-xl mb-6 shadow-lg">
+                  4
+                </div>
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-gray-900 leading-tight">
+                    Receive Results
+                  </h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Wait for the email — or revisit your dashboard anytime to
+                    see the live results. We&apos;ll also keep the report on
+                    your account.
+                  </p>
+                  <div className="flex items-center gap-3 pt-2">
+                    <Mail className="h-5 w-5 text-rose-500" />
+                    <span className="text-xs font-medium text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full">
+                      Secure preview link in email
+                    </span>
+                  </div>
+                </div>
               </div>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-center">
-                  <Check className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span>Everything in Professional</span>
-                </li>
-                <li className="flex items-center">
-                  <Check className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span>Team collaboration tools</span>
-                </li>
-                <li className="flex items-center">
-                  <Check className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span>Custom integrations</span>
-                </li>
-                <li className="flex items-center">
-                  <Check className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span>White-label options</span>
-                </li>
-                <li className="flex items-center">
-                  <Check className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span>Dedicated support</span>
-                </li>
-              </ul>
-              <button className="w-full border-2 border-purple-200 hover:bg-purple-50 text-purple-700 py-3 rounded-lg font-semibold transition-colors">
-                Contact Sales
-              </button>
+            </div>
+          </div>
+
+          {/* CTA Section */}
+          <div className="max-w-4xl mx-auto">
+            {/* Pro tip card */}
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-100 rounded-2xl p-8 mb-8">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold">💡</span>
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-gray-900 mb-2">Pro tip</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Use the &ldquo;Email me&rdquo; option so you don&apos;t have
+                    to wait on the site — we&apos;ll send the full report when
+                    the analysis completes.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <SignedIn>
+                <button
+                  onClick={() => router.push("/upload-resume")}
+                  className="group inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 w-full sm:w-auto"
+                >
+                  <Upload className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+                  Start Analysis
+                </button>
+              </SignedIn>
+
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <button className="group inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 w-full sm:w-auto">
+                    <Upload className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+                    Start Analysis
+                  </button>
+                </SignInButton>
+              </SignedOut>
+
+              <SignedIn>
+                <button
+                  onClick={() => router.push("/manage-resume")}
+                  className="group inline-flex items-center gap-3 border-2 border-gray-200 hover:border-purple-200 px-8 py-4 rounded-xl text-gray-700 hover:text-purple-700 font-semibold transition-all duration-300 hover:shadow-md w-full sm:w-auto bg-white"
+                >
+                  <span>View dashboard</span>
+                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </SignedIn>
+
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <button className="group inline-flex items-center gap-3 border-2 border-gray-200 hover:border-purple-200 px-8 py-4 rounded-xl text-gray-700 hover:text-purple-700 font-semibold transition-all duration-300 hover:shadow-md w-full sm:w-auto bg-white">
+                    <span>View dashboard</span>
+                    <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </SignInButton>
+              </SignedOut>
             </div>
           </div>
         </div>

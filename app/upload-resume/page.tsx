@@ -39,6 +39,7 @@ const UploadResume = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [isReplacingFiles, setIsReplacingFiles] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [sendMail, setSendMail] = useState(false);
   const router = useRouter();
 
   const handleGenerateSamplePost = async () => {
@@ -224,13 +225,14 @@ const UploadResume = () => {
     if (!resumePdfId) {
       alert("Please upload resume pdf before triggering the scan");
     }
-    router.push("/manage-resume");
+
     setIsScanning(true);
     try {
       const result = await triggerScanning(
         resumeId,
         resumePdfId,
         textareaValue,
+        sendMail,
       );
       if (result.error) {
         alert(`Error in scanning the resume with job post ${result.error}`);
@@ -247,7 +249,7 @@ const UploadResume = () => {
       setIsScanning(false);
       router.push(`/resume/${resumeId}`);
     }
-  }, [user, resumePdfId, textareaValue, router, resumeId]);
+  }, [user, resumePdfId, textareaValue, router, resumeId, sendMail]);
 
   if (!user) {
     return (
@@ -378,14 +380,35 @@ const UploadResume = () => {
               </Button>
             </div>
           </div>
+          <div className="flex justify-center items-center flex-col gap-2.5 md:justify-between md:flex-row flex-wrap w-full mt-2 py-4">
+            <div className="flex gap-1.5 items-center justify-center md:items-center md:justify-center">
+              <input
+                type="checkbox"
+                name="mail"
+                id=""
+                checked={sendMail}
+                onChange={(e) => {
+                  setSendMail(e.target.checked);
+                  console.log(e.target.checked);
+                }}
+                className="cursor-pointer w-4 h-4 md:w-5 md:h-5 rounded-sm accent-primary m-1"
+              />
+              <span className="text-gray-600 text-[12px] md:text-sm font-medium w-full">
+                Send mail after completion <b>(Suggested)</b>
+              </span>
+            </div>
+            <Button
+              className={`${isScanning || !resumeId || !resumePdfId ? "cursor-not-allowed" : ""} `}
+              onClick={() => {
+                handleTriggerScanning();
+                router.push("/manage-resume");
+              }}
+              disabled={!resumePdfId || !resumeId || isUploading || isScanning}
+            >
+              {!isScanning ? "Start Scanning" : "Scanning ..."}
+            </Button>
+          </div>
 
-          <Button
-            className={`mt-4 w-full ${isScanning || !resumeId || !resumePdfId ? "cursor-not-allowed" : ""} `}
-            onClick={() => handleTriggerScanning()}
-            disabled={!resumePdfId || !resumeId || isUploading || isScanning}
-          >
-            {!isScanning ? "Start Scanning" : "Scanning ..."}
-          </Button>
           {uplodedFileLists.length > 0 && (
             <div className="w-full mt-4">
               <h4 className="font-semibold text-sm mb-2">Uploaded Files:</h4>

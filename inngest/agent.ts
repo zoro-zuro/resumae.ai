@@ -39,6 +39,7 @@ STEP 1: Extract key data from resume at: ${event.data.url}
 STEP 2: Compare against job requirements: ${event.data.jobPost}  
 STEP 3: Generate ATS score and recommendations
 STEP 4: Save results to database with ID: ${event.data.resumeId}
+STEP 5: Send email to user if provided:: ${event.data.userMail}
 
 Focus on:
 - Skills matching
@@ -46,7 +47,7 @@ Focus on:
 - ATS keyword optimization
 - Specific improvement suggestions
 
-Once saved to database, mark as complete.
+Once saved to database send mail if provided then mark status as completed.
 `);
 
     return response.state.kv.get("resumeId") as Id<"resume">;
