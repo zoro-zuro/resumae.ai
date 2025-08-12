@@ -1,4 +1,4 @@
-// lib/sendBrevo.ts
+"use server";
 export async function sendBrevo({
   to,
   subject,
