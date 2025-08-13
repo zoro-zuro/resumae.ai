@@ -3,7 +3,8 @@ import { gemini } from "inngest";
 import z from "zod";
 
 const matchingResume = createTool({
-  name: "mathches-resumetojob",
+  name: "matchingResume",
+  description: "Compare resume data against job requirements",
   parameters: z.object({
     jobPost: z
       .string()
@@ -39,6 +40,8 @@ const matchingResume = createTool({
           defaultParameters: {
             generationConfig: {
               maxOutputTokens: 3094,
+              temperature: 0.1,
+              topP: 0.1,
             },
           },
         }),
@@ -49,63 +52,43 @@ const matchingResume = createTool({
               parts: [
                 {
                   text: `
-You are an ATS matching engine.
+You are a precise ATS matching engine. Analyze the resume against job requirements and return ONLY a structured JSON response.
 
-Evaluate how well a candidate’s resume matches the provided job post. Respond ONLY with a JSON object in the following structure:
-
+Required Output Structure:
 {
-  "overallScore": 0–100,
-  "skillsMatch": % of matched skills,
-  "experienceMatch": true or false,
-  "keywordDensity": % of job keywords found in resume,
-  "matchedSkills": [List of matched skills],
-  "missingSkills": [List of missing or weak skills],
-  "recommendations": [How to improve alignment],
-  "keywordSuggestions": [Extra keywords to include],
-  "strengths": [Highlights relevant to the job],
-  "warnings": [Potential gaps or issues],
-  "experienceGap": "Explanation of missing experience if any",
-  "aisummary": "Brief natural language summary comparing resume to job"
+  "overallScore": number,        // 0-100, overall match score
+  "skillsMatch": number,         // 0-100, percentage of matched skills
+  "experienceMatch": boolean,    // true if meets experience requirements
+  "keywordDensity": number,      // 0-100, percentage of keywords found
+  "matchedSkills": string[],     // Skills found in both resume and job post
+  "missingSkills": string[],     // Required skills not found in resume
+  "recommendations": string[],    // Specific actions to improve match
+  "keywordSuggestions": string[], // Keywords to add from job description
+  "strengths": string[],         // Strong matches with job requirements
+  "warnings": string[],          // Gaps or misalignments found
+  "experienceGap": string,       // Specific experience gap description
+  "aisummary": string           // Concise match analysis
 }
 
-Be objective, concise, and accurate. Base scores only on the provided data. No extra explanation.No gibbreish.
+Rules:
+1. All scores must be integers between 0-100
+2. experienceMatch must be strictly boolean
+3. All arrays must contain only strings
+4. No empty arrays - use ["None found"] if empty
+5. experienceGap must be a clear, specific string
+6. aisummary must be under 100 words
+7. You have a maxOutputTokens: 3094 try to answer consise within it.
 
-Example Input:
-Job Post: "Looking for a backend engineer skilled in Node.js, PostgreSQL, and AWS with 3+ years of experience."
-Skills: ["Node.js", "Express.js", "MongoDB"]
-Experience: "2 years"
-Education: "BTech in Computer Science"
-Job Titles: ["Backend Developer"]
-Key Achievements: ["Reduced API latency by 40%"]
-Tools: ["Git", "MongoDB"]
-Keywords: ["Node.js", "PostgreSQL", "AWS"]
 
-Expected Output:
-{
-  "overallScore": 65,
-  "skillsMatch": 50,
-  "experienceMatch": false,
-  "keywordDensity": 33,
-  "matchedSkills": ["Node.js"],
-  "missingSkills": ["PostgreSQL", "AWS"],
-  "recommendations": ["Gain experience in AWS and PostgreSQL", "Highlight relevant projects"],
-  "keywordSuggestions": ["PostgreSQL", "AWS"],
-  "strengths": ["Strong Node.js experience"],
-  "warnings": ["Experience below required"],
-  "experienceGap": "Requires 3+ years, candidate has 2",
-  "aisummary": "Candidate is a strong backend developer but lacks required experience and PostgreSQL/AWS exposure."
-}
-
-Inputs:
-- Job Post: ${jobPost}
-- Skills: ${skills}
-- Experience: ${experience}
-- Education: ${education}
-- Job Titles: ${jobTitles}
-- Key Achievements: ${keyAchievements}
-- Tools: ${tools}
-- Keywords: ${keywords}
-`,
+Analyze these inputs:
+Job Post: ${jobPost}
+Skills: ${JSON.stringify(skills)}
+Experience: ${experience}
+Education: ${education}
+Job Titles: ${JSON.stringify(jobTitles)}
+Key Achievements: ${JSON.stringify(keyAchievements)}
+Tools: ${JSON.stringify(tools)}
+Keywords: ${JSON.stringify(keywords)}`,
                 },
               ],
             },
@@ -121,32 +104,49 @@ Inputs:
 });
 
 export const analyseMatch = createAgent({
-  name: "generateMatch",
-  description:
-    "Score resume against job requirements and provide recommendations",
+  name: "analyseMatch",
+  description: "Compare resume against job requirements",
   model: openai({
     model: "gpt-4o",
     baseUrl: process.env.OPENAI_BASEURL,
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY_GPT_4o,
     defaultParameters: {
       max_completion_tokens: 3094,
     },
   }),
   system: `
-You are an ATS evaluation agent. Your task is to evaluate how well a candidate's resume matches a job post. You must use a scoring rubric that includes:
+You are an ATS matching engine with access to the matches-resume-to-job tool.
 
-- Skills Match %: Based on overlap of skills/tools between resume and job post.
-- Experience Match: Boolean, based on required vs actual years of experience.
-- Keyword Density: % of job keywords appearing in resume.
-- Overall ATS Score: Weighted average of the above metrics (range 0–100).
+Available Tool:
+- Name: matchingResume
+- Purpose: Score resume against job requirements
+- Input: Resume data and job post
+- Output Format (JSON):
+  {
+    "overallScore": number,        // Range: 0-100
+    "skillsMatch": number,         // Percentage (0-100)
+    "experienceMatch": boolean,    // true/false
+    "keywordDensity": number,      // Percentage (0-100)
+    "matchedSkills": string[],     // Found skills
+    "missingSkills": string[],     // Missing skills
+    "recommendations": string[],    // Improvement suggestions
+    "keywordSuggestions": string[], // Keywords to add
+    "strengths": string[],         // Strong points
+    "warnings": string[],          // Potential issues
+    "experienceGap": string,       // Experience difference
+    "aisummary": string           // Brief analysis
+  }
 
-You should also identify:
-- Strengths in the resume relevant to the job.
-- Gaps or mismatches (warnings).
-- Recommendations to improve the resume for better alignment.
-- Suggested keywords to include.
+Task:
+1. Compare resume data against job requirements
+2. Calculate all metrics accurately
+3. Return JSON with exact structure above
+4. Ensure all number values are within valid ranges
+5. Provide actionable recommendations
+6. You have a maxOutputTokens: 3094 try to answer consise within it.
 
-Respond in structured JSON format only.
+
+No additional explanations - return only the structured JSON.
 `,
   tools: [matchingResume],
 });

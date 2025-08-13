@@ -20,12 +20,14 @@ import {
   Users,
   Shield,
   OctagonAlert,
+  Lock,
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { triggerDeleteResume } from "@/actions/deleteResume";
 import Lottie from "lottie-react";
 import animationData from "@/public/ResumePageAnimation.json";
+import { SignInButton, useUser } from "@clerk/clerk-react";
 const ResumePage = () => {
   const params = useParams<{ id: Id<"resume"> }>();
   const [tab, setTab] = useState("analytics");
@@ -37,6 +39,10 @@ const ResumePage = () => {
     resumeId: resume?.fileId as Id<"_storage">,
   });
   const isLoading = !resume;
+
+  const { user } = useUser();
+
+  const isAllowed = user?.id == resume?.userId;
 
   const handleDeleteResume = useCallback(async () => {
     router.push("/manage-resume");
@@ -101,7 +107,40 @@ const ResumePage = () => {
     { id: "aisummary", label: "AI Insights", icon: Brain },
     { id: "resume", label: "Resume Preview", icon: FileText },
   ];
-
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen p-6">
+        <div className="max-w-md w-full bg-white p-8 rounded-xl border shadow-xl text-center">
+          <Lock className="w-12 h-12 text-primary mx-auto mb-4" />
+          <h2 className="text-2xl font-semibold mb-2">
+            Authentication Required
+          </h2>
+          <p className="text-muted-foreground mb-6">
+            Please sign in to securely upload your resume and access all
+            features.
+          </p>
+          <SignInButton mode="modal">
+            <Button className="w-full">Sign In</Button>
+          </SignInButton>
+        </div>
+      </div>
+    );
+  }
+  if (!isAllowed) {
+    return (
+      <div className="flex items-center justify-center min-h-screen p-6">
+        <div className="max-w-md w-full bg-white p-8 rounded-xl border shadow-xl text-center">
+          <Lock className="w-12 h-12 text-primary mx-auto mb-4" />
+          <h2 className="text-2xl font-semibold mb-2">
+            Authentication Required
+          </h2>
+          <p className="text-muted-foreground mb-6">
+            You are not the owner of the resume
+          </p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="bg-gradient-to-bl from-primary/40 to-accent/60 rounded-xl backdrop:blur-2xl p-5 md:p-6 mx-4 md:mx-8 mb-6 mt-4 flex items-center justify-center">
       <div className="w-full max-w-7xl mx-auto sm:px-3 lg:px-8">

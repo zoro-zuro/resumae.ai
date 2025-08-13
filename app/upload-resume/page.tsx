@@ -371,7 +371,7 @@ const UploadResume = () => {
                 onClick={() => {
                   handleGenerateSamplePost();
                 }}
-                disabled={isUploading || isScanning}
+                disabled={isUploading || isScanning || isGeneratingPost}
               >
                 <Bot className="w-4 h-4 mr-1" />
                 {isGeneratingPost

@@ -37,7 +37,7 @@ export const triggerScanning = async (
         error: `Error in generating url for resume ${resumelUrl}`,
       };
     }
-    let userMail = "Not_provided";
+    let userMail = null;
 
     if (sendMail) {
       userMail = user.emailAddresses?.[0]?.emailAddress;

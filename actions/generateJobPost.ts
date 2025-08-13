@@ -1,14 +1,16 @@
 "use server";
+
 import { currentUser } from "@clerk/nextjs/server";
-import OpenAI from "openai";
+import Groq from "groq-sdk"; // Make sure you installed with: npm install groq-sdk
 
 export const generateSampleJobPost = async (description: string) => {
   if (description.length > 120) {
     return {
       success: false,
-      error: "Prompt is too long does'nt send only jobdescription",
+      error: "Prompt is too long — send only job description",
     };
   }
+
   if (!description) {
     return {
       success: false,
@@ -25,16 +27,16 @@ export const generateSampleJobPost = async (description: string) => {
   }
 
   try {
-    const openai = new OpenAI({
-      baseURL: process.env.OPENAI_BASEURL,
-      apiKey: process.env.OPENAI_API_KEY,
+    const client = new Groq({
+      // baseURL: process.env.GROQ_BASE_URL,
+      apiKey: process.env.GROQ_API_KEY!,
     });
 
     const prompt = `
 Extract ONLY the essential ATS information from this job role: "${description}"
 
 Return ONLY:
-1.**Role** (job role)
+1. **Role** (job role)
 2. **Required Skills** (5-8 specific technical skills)
 3. **Experience Level** (Junior/Mid/Senior + years)
 4. **Key Responsibilities** (3-5 main duties)
@@ -44,8 +46,8 @@ Format as a clean, structured list. No company info, benefits, or fluff.
 Keep it under 200 words total.
 `;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+    const response = await client.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
       messages: [
         {
           role: "user",
@@ -56,7 +58,7 @@ Keep it under 200 words total.
       max_tokens: 700,
     });
 
-    const samplePost = response.choices[0].message.content;
+    const samplePost = response.choices[0]?.message?.content;
 
     if (!samplePost) {
       return {
@@ -67,13 +69,15 @@ Keep it under 200 words total.
 
     return {
       success: true,
-      data: samplePost,
+      data: samplePost.trim(),
     };
   } catch (error) {
     console.error("Error generating sample job post", error);
     return {
       success: false,
-      error: `Error generating sample job post: ${error instanceof Error ? error.message : "Unknown error"}`,
+      error: `Error generating sample job post: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`,
     };
   }
 };

@@ -28,6 +28,8 @@ const parseDoc = createTool({
           defaultParameters: {
             generationConfig: {
               // maxOutputTokens: 3094,
+              temperature: 0.1,
+              topP: 0.1,
             },
           },
         }),
@@ -37,20 +39,35 @@ const parseDoc = createTool({
               role: "user",
               parts: [
                 {
-                  text: `You are a resume parsing assistant. Analyze the attached PDF and extract the following structured information in JSON format:
+                  text: `You are a precise resume parsing system. Extract ONLY the following information from the PDF and return it in a strict JSON format.
 
+Required Output Structure:
 {
-  "skills": ["List of technical skills like React, Node.js, Python"],
-  "experience": "Summary of total and relevant experience (e.g., 5 years total, 3 years React)",
-  "education": "Highest degree, major, institution, and GPA (if available)",
-  "jobTitles": ["Previous job titles held"],
-  "companies": ["Associated companies for each role (if available)"],
-  "achievements": ["Key accomplishments with measurable results"],
-  "certifications": ["Professional certifications or licenses"],
-  "keywords": ["Industry-relevant keywords or buzzwords"]
+  "skills": string[],       // Technical skills, frameworks, programming languages
+  "experience": string,     // Format: "X years total, Y years in [technology]"
+  "education": string,      // Format: "Degree, Major, Institution, GPA"
+  "jobTitles": string[],   // Previous positions held
+  "companies": string[],    // Employers for each role
+  "achievements": string[], // Quantifiable results (numbers, percentages)
+  "certifications": string[], // Professional certifications only
+  "keywords": string[]     // Industry-specific terms
 }
 
-Respond only with a well-formatted JSON object.
+Rules:
+1. Return ONLY the JSON object - no explanations
+2. Ensure all arrays contain strings
+3. Keep experience as a single formatted string
+4. Include only verifiable technical skills
+5. Format education as a single comprehensive string
+6. Include only measurable achievements
+7. Extract only relevant industry keywords
+8. Ensure all the feild are extracted everything is must
+
+DO NOT:
+- Add additional fields
+- Include personal information
+- Add explanatory text
+- Modify the JSON structure
 `,
                 },
                 {
@@ -73,29 +90,43 @@ Respond only with a well-formatted JSON object.
   },
 });
 
-export const analyeseDoc = createAgent({
-  name: "Analyse Doc",
+export const analyseDoc = createAgent({
+  name: "analyseDoc",
   description: "Extract key resume data for ATS analysis",
   system: `
-You are a resume intelligence agent specializing in parsing resumes for Applicant Tracking Systems (ATS). Your role is to extract key structured data points that help in automated screening and job matching.
+You are a PDF resume parser with access to the ParseDoc tool.
 
-Extract and return ONLY the following elements:
+Available Tool:
+- Name: ParseDoc
+- Purpose: Extract structured data from resume PDF
+- Input: PDF document URL
+- Output Format (JSON):
+  {
+    "skills": string[],       // Technical skills list
+    "experience": string,     // Total years and tech-specific experience
+    "education": string,      // Highest degree details
+    "jobTitles": string[],    // Previous job titles
+    "companies": string[],    // Previous employers
+    "achievements": string[], // Measurable accomplishments
+    "certifications": string[], // Professional certifications
+    "keywords": string[]     // Industry-relevant terms
+  }
 
-- Technical Skills: Specific tools, languages, or frameworks.
-- Experience: Total years and years per major technology/role.
-- Education: Degree(s), institutions, and GPA (if stated).
-- Roles & Companies: Previous job titles and associated companies.
-- Achievements: Results-backed statements (e.g., "increased efficiency by 30%").
-- Certifications: Any listed technical or professional credentials.
-- Industry Keywords: Common buzzwords relevant to the domain or job type.
+Task:
+1. Use ParseDoc tool to analyze the PDF
+2. Extract ONLY the specified data points
+3. Return structured JSON exactly as specified
+4. Ensure all arrays are properly formatted
+5. Validate data types before returning
+6. all of the above metioned output is must needed
 
-Avoid general summaries. Return concise, factual data points that can be used directly in downstream systems.
+Do not include additional information or explanations.
 `,
 
   model: openai({
-    model: "gpt-4o",
+    model: "gpt-4.1-mini",
     baseUrl: process.env.OPENAI_BASEURL,
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY_GPT_4_MINI,
     defaultParameters: {
       // max_completion_tokens: 3094,
     },

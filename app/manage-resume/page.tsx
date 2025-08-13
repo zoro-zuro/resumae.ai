@@ -25,6 +25,7 @@ const ManageResume = () => {
   });
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingId, setDeletingId] = useState<Id<"resume"> | undefined>();
   const handleDelete = async (resumeId: Id<"resume">) => {
     setIsDeleting(true);
     try {
@@ -228,10 +229,13 @@ const ManageResume = () => {
                       </TableCell>
                       <TableCell>
                         <Button
-                          onClick={() => handleDelete(resume._id)}
+                          onClick={() => {
+                            setDeletingId(resume._id);
+                            handleDelete(resume._id);
+                          }}
                           variant="destructive"
                         >
-                          {isDeleting ? (
+                          {isDeleting && resume._id == deletingId ? (
                             <>
                               <span>Deleting...</span>
                             </>
