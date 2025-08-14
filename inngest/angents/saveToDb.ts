@@ -241,7 +241,7 @@ export const saveToDb = createAgent({
   model: openai({
     model: "gpt-4.1-nano",
     baseUrl: process.env.OPENAI_BASEURL,
-    apiKey: process.env.OPENAI_API_KEY_GPT_4_NANO,
+    apiKey: process.env.OPENAI_API_KEY_GPT_4o_MINI,
   }),
   system: `
 You are a database operations agent with access to the save-resume-analysis tool.
